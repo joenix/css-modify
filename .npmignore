@@ -1,0 +1,12 @@
+.DS_Store
+.npmignore
+
+/node_modules
+
+# Configuration
+/*.js
+/*.json
+
+!/package.json
+!/dist/index.js
+!/test.js
