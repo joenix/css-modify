@@ -1,6 +1,6 @@
 {
   "name": "css-modify",
-  "version": "1.2.3",
+  "version": "1.4.2",
   "description": "css modify var",
   "main": "dist/main.js",
   "scripts": {
@@ -15,5 +15,8 @@
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-0": "^6.24.1",
     "webpack": "^3.11.0"
+  },
+  "dependencies": {
+    "attribute-style-map": "^1.2.3"
   }
 }

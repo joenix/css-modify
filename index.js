@@ -1,14 +1,21 @@
+import compatible from "./compatible";
+
+let proxy;
+
 export default class CSS {
   constructor(prefix = "") {
     if (prefix.constructor !== String) {
       prefix = "";
     }
-    this.$prefix = prefix;
-    this.$element = document.documentElement;
-    this.$attrs = this.$element.attributeStyleMap;
-    this.$compt = this.$element.computedStyleMap;
-    this.$sign = "css-modify";
-    this.$sheet = this._sign(this.$sign);
+
+    proxy = this;
+
+    proxy.$prefix = prefix;
+    proxy.$element = compatible(document.documentElement);
+    proxy.$attrs = proxy.$element.attributeStyleMap;
+    proxy.$compt = proxy.$element.computedStyleMap;
+    proxy.$sign = "css-modify";
+    proxy.$sheet = proxy._sign(proxy.$sign);
 
     return this;
   }
@@ -17,48 +24,47 @@ export default class CSS {
     return `--${key}`;
   }
 
-  _sign(id) {
-    return (
+  _sign(id, node) {
+    node =
       document.querySelector(`#${id}`) ||
       (style => (
         Object.assign(style, { id, type: "text/css" }),
-        document.head.appendChild(style),
-        style.sheet || style.styleSheet
-      ))(document.createElement("style"))
-    );
+        document.head.appendChild(style)
+      ))(document.createElement("style"));
+    return node.sheet || node.styleSheet;
   }
 
   modify(vars, value) {
     value === undefined
-      ? Object.keys(vars).forEach(name => this.set(name, vars[name]))
-      : this.set(vars, value);
+      ? Object.keys(vars).forEach(name => proxy.set(name, vars[name]))
+      : proxy.set(vars, value);
   }
 
   set(key, value) {
     value === undefined
-      ? this.delete(key)
-      : this.$attrs.set(this._prefix(key), value);
+      ? proxy.delete(key)
+      : proxy.$attrs.set(proxy._prefix(key), value);
   }
 
   get(key) {
-    return this.$attrs.get(this._prefix(key));
+    return proxy.$attrs.get(proxy._prefix(key));
   }
 
   delete(prop) {
-    this.$attrs.delete(this._prefix(prop));
+    proxy.$attrs.delete(proxy._prefix(prop));
   }
 
   clear(prop) {
-    vars === undefined ? this.$attrs.clear() : this.delete(prop);
+    vars === undefined ? proxy.$attrs.clear() : proxy.delete(prop);
   }
 
   has(prop) {
-    return this.$attrs.has(this._prefix(prop));
+    return proxy.$attrs.has(proxy._prefix(prop));
   }
 
   css(json) {
     return Object.keys(json)
-      .map(selector => `${selector}{${this.of(json[selector])}}`)
+      .map(selector => `${selector}{${proxy.of(json[selector])}}`)
       .join("\n");
   }
 
@@ -68,7 +74,17 @@ export default class CSS {
       .join(";");
   }
 
+  clean() {
+    const { $sheet, clean } = proxy;
+
+    if (!$sheet.cssRules.length) {
+      return;
+    }
+
+    $sheet[$sheet.deleteRule ? "deleteRule" : "removeRule"](0), proxy.clean();
+  }
+
   style(css) {
-    this.$sheet.insertRule(this.css(css));
+    proxy.$sheet.insertRule(proxy.css(css), proxy.$sheet.length);
   }
 }
